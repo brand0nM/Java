@@ -1,83 +1,119 @@
 // Map Layers
+
+
 let dark = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/dark-v10/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>',
-    maxZoom: 18,
-    accessToken: API_KEY
+    attribution: `Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, 
+                <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) 
+                <a href="https://www.mapbox.com/">Mapbox</a>`, maxZoom: 18, accessToken: API_KEY
 });
 let streets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: `Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a>
                 contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, 
-                Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>`,
-    maxZoom: 18,
-    accessToken: API_KEY
+                Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>`, maxZoom: 18, accessToken: API_KEY
 });
-let satellite = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+let satellite = L.tileLayer(
+    'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: `Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a>
                 contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, 
-                Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>`,
-    maxZoom: 18,
-    accessToken: API_KEY
+                Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>`, maxZoom: 18, accessToken: API_KEY
 });
-//C Create empty map
-let map = L.map('mapid', {center: [0, 0],zoom: 2,layers: [dark]})
+let techtonicPlates = new L.LayerGroup();
 let earthquakes = new L.LayerGroup();
-// Define Layers toggle
-let baseMaps = {
-  Dark: dark,
-  Street: streets,
-  Satellite: satellite
-};
-let overlays = {
-    Earthquakes: earthquakes
-};
-// Define toggle method
-L.control.layers(baseMaps, overlays).addTo(map);
+let majorEarthquakes = new L.LayerGroup();
+let map = L.map('mapid', {center: [0, 0],zoom: 2,layers: [dark,techtonicPlates]});  // Create Data layers and an Empty map
+L.control.layers({Dark: dark,Street: streets,Satellite: satellite},  // Define toggle Layers for map and data type
+        {TechtonicPlates: techtonicPlates, Earthquakes: earthquakes, MajorEarthquakes: majorEarthquakes}).addTo(map);
+
+
 // Define map logic outside of json call for memory
-function styleInfo(feature) {
-    return {opacity: 1,fillOpacity: 1,fillColor: getColor(feature.properties.mag),color: "#000000",
-                radius: getRadius(feature.properties.mag),stroke: true,weight: 0.5};
-};
-function getRadius(magnitude) {
-  if (magnitude === 0) {return 1;}
-  return magnitude * 4;
-}
-function getColor(magnitude) {
+
+
+function styleTech(feature) {return {color: "teal", weight: 1.5};};
+function styleAll(feature) {return {opacity: 1,fillOpacity: 1,fillColor: getColorAll(feature.properties.mag),
+    color: "#000000",radius: getRadius(feature.properties.mag),stroke: true,weight: 0.5};};
+function styleTop(feature) {return {opacity: 1,fillOpacity: 1,fillColor: getColorTop(feature.properties.mag),
+    color: "#000000",radius: getRadius(feature.properties.mag),stroke: true,weight: 0.5};};
+function getRadius(magnitude) {if (magnitude === 0) {return 1;}
+  return magnitude * 4;}
+function getColorAll(magnitude) {
   if (magnitude > 5) {return "#ea2c2c";}
   if (magnitude > 4) {return "#ea822c";}
   if (magnitude > 3) {return "#ee9c00";}
   if (magnitude > 2) {return "#eecc00";}
   if (magnitude > 1) {return "#d4ee00";}
-  return "#98ee00";
-}
-//perform json call using d3
-d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then(function(data) {
-    console.log(data);
-    L.geoJSON(data, {
-        pointToLayer: function(feature, latlng){
-            return L.circleMarker(latlng);
-        },
-        style: styleInfo,
-        onEachFeature: function(feature, layer) {
-            layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + feature.properties.place);
-        }
-    }).addTo(earthquakes);
-    earthquakes.addTo(map);
-});
-// Create a legend
-let legend = L.control({position: "bottomright"});
-legend.onAdd = function() {
-    let div = L.DomUtil.create("div", "info legend");
-    const magnitudes = [0, 1, 2, 3, 4, 5];
-    const colors = ["#98ee00","#d4ee00","#eecc00","#ee9c00","#ea822c","#ea2c2c"];
-    for (var i = 0; i < magnitudes.length; i++) {
-        div.innerHTML +=
-        "<i style='background: " + colors[i] + "'></i> " +
-        magnitudes[i] + (magnitudes[i + 1] ? "&ndash;" + magnitudes[i + 1] + "<br>" : "+");
-    }
-    return div;
-};
-legend.addTo(map);
+  return "#98ee00";}
+function getColorTop(magnitude) {
+  if (magnitude < 5) {return "orange";}
+  if (magnitude > 6) {return "red";}
+  return "yellow";}
 
+
+// Use d3 to call and plot the data
+
+
+d3.json('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json').then(function(data) {
+    L.geoJSON(data, {style: styleTech}).addTo(techtonicPlates);
+});
+d3.json('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson').then(function(data) {
+    L.geoJSON(data, {pointToLayer: function(feature, latlng){return L.circleMarker(latlng);},style: styleTop, 
+        onEachFeature: function(feature, layer) {layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + 
+            feature.properties.place);}}).addTo(majorEarthquakes);   
+    majorEarthquakes.addTo(map)
+    L.geoJSON(data, {pointToLayer: function(feature, latlng){return L.circleMarker(latlng);},style: styleAll,
+        onEachFeature: function(feature, layer) {layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + 
+            feature.properties.place);}}).addTo(earthquakes);
+    earthquakes.addTo(map);  
+});
+
+
+// Create legend layers and variables to acces them
+
+
+let legend1 = L.control({position: "bottomright"});
+let legend2 = L.control({position: "bottomright"});
+function populateLegend1(){
+    legend1.onAdd = function() {
+        let div = L.DomUtil.create("div", "info legend");
+        const magnitudes = ['small','medium','large'];
+        const colors = ['yellow','orange','red'];
+        for (var i = 0; i < magnitudes.length; i++) {div.innerHTML += "<i style='background: " + colors[i] + "'></i> " +
+            magnitudes[i] + (magnitudes[i + 1] ? "&ndash;" + magnitudes[i + 1] + "<br>": "+" );}
+        return div;
+    };
+    legend1.addTo(map);
+};
+function populateLegend2(){
+    legend2.onAdd = function() {
+        let div = L.DomUtil.create("div", "info legend");
+        const magnitudes = [0, 1, 2, 3, 4, 5];
+        const colors = ["#98ee00","#d4ee00","#eecc00","#ee9c00","#ea822c","#ea2c2c"];
+        for (var i = 0; i < magnitudes.length; i++) {
+            div.innerHTML +="<i style='background: " + colors[i] + "'></i> " +
+            magnitudes[i] + (magnitudes[i + 1] ? "&ndash;" + magnitudes[i + 1] + "<br>" : "+");
+        }
+        return div;
+    };
+    legend2.addTo(map);  
+};
+populateLegend2();
+
+// Create logic to hide hide/remove layers // Remove legend layers when layers are added
+
+    // Add event listeners to the earthwauakaes and top earthquakes, checkbox
+
+        // Remove legend2 and create legend1
+        // legend2.remove();
+        // populateLegend1();
+
+        // Remove legend1 and create legend2
+        // legend1.remove();
+        // populateLegend2();
+
+
+
+// 1) How to create an overlay feature but keep it value as null/ unchecked or how to check the box's
+
+// 2) add event listner to the checkbox, if value is checked grab/graph its legend
 
 
 
