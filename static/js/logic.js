@@ -64,7 +64,7 @@ d3.json('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
 });
 
 
-// Create legend layers and variables to acces them
+// Functions to create legends
 
 
 let legend1 = L.control({position: "bottomright"});
@@ -91,13 +91,18 @@ function populateLegend2(){
     legend2.addTo(map)};
 
 
-// default show
+// Default show Earthquakes layer and legend
+
+
 populateLegend2();
 earthquakes.addTo(map);
+
+
+// Logic to listen for changes and create legends
+
+
 let clicked1 = true;
 let clicked2 = false;
-
-
 document.querySelectorAll(".leaflet-control-layers-selector")[4].onclick = function(){ // listen to if input is clicked
     if (clicked1){legend2.remove(); //  remove existing legend
     } else {populateLegend2()}; // create legend if doesn't exist
