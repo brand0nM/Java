@@ -90,21 +90,91 @@ function populateLegend2(){
         return div};
     legend2.addTo(map)};
 
-
 // default show
 populateLegend2();
 earthquakes.addTo(map);
-let clicked1 = true;
-let clicked2 = false;
-
-
-document.querySelectorAll(".leaflet-control-layers-selector")[4].onclick = function(){ // listen to if input is clicked
-    if (clicked1){legend2.remove(); //  remove existing legend
-    } else {populateLegend2()}; // create legend if doesn't exist
-    clicked1 = !clicked1};
+document.querySelectorAll(".leaflet-control-layers-selector")[4].onclick = function(){
+    // if clicked
+        legend2.remove();
+    // else if not clicked
+        // populateLegend2();
+};
 document.querySelectorAll(".leaflet-control-layers-selector")[5].onclick = function(){
-    if (clicked2){legend1.remove();
-    } else {populateLegend1()};
-    clicked2 = !clicked2};
+    // if clicked
+        // legend1.remove();
+    // else if not clicked
+        populateLegend1();
+};
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// let torontoHoods = "https://raw.githubusercontent.com/brand0nM/Java/main/torontoNeighborhoods.json";
+// d3.json(torontoHoods).then(function(data){
+//     console.log(data)
+//     L.geoJSON(data, {
+//         weight: 1,
+//         color:'orange',
+//         fillColor:'yellow',
+//         onEachFeature: function onEachFeature(features, layer) {
+//             layer.bindPopup(`<h2>Neighborhood: ${features.properties.AREA_NAME}</h2> 
+//                             <hr>${features.properties.AREA_S_CD}</h3>`);
+//         }          
+//     }).addTo(map);
+// });
+
+// let torontoData = "https://raw.githubusercontent.com/brand0nM/Java/main/torontoRoutes.json";
+// d3.json(torontoData).then(function(data) {
+//     console.log(data);
+//   // Creating a GeoJSON layer with the retrieved data.
+//   L.geoJSON(data,{
+//     color:'yellow',
+//     weight: 2,
+//     onEachFeature: function onEachFeature(features, layer) {
+//         layer.bindPopup(`<h2>Airlines: ${features.properties.airline}</h2> 
+//                         <hr><h3>Destination: ${features.properties.dst}</h3>`);
+//     }    
+//   }).addTo(map);
+// });
+
+
+// let airportData = "https://raw.githubusercontent.com/brand0nM/Java/main/majorAirports.json";
+// d3.json(airportData).then(function(data) {
+//     data.features.forEach(function(row){
+//         row.properties.popupContent = `<h2>Airport Code: ${row.properties.faa}</h2> <hr> 
+//                                     <h3>Airport Name: ${row.properties.name}</h3>`
+//     });
+//     L.geoJSON(data, {
+//         onEachFeature: function onEachFeature(features, layer) {
+//             if (features.properties && features.properties.popupContent) {
+//                 layer.bindPopup(features.properties.popupContent);
+//             }
+//         }
+//     }).addTo(map)
+// });
